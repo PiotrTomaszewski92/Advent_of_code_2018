@@ -1,13 +1,12 @@
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Day3 {
 
     int maxSquares = 0;
     Map<String,List<Integer>> area = new HashMap<>();
+    Set<String> oneClaims = new HashSet<>();
+    Map<String,Integer> countClaims = new HashMap<>();
 
     public static void main(String[] args) {
 
@@ -22,10 +21,15 @@ public class Day3 {
         }
 
         day3.setClaimsOnArea(claims);
-
         day3.checkMerged();
-
         System.out.println("Merged: "+day3.maxSquares);
+
+        //=====bouns============
+        day3.findClaimWithOneId();
+        System.out.println("Solution bonus: "+day3.checkSize(claims));
+        //======================
+
+
 
 
     }
@@ -39,13 +43,11 @@ public class Day3 {
 
 
     private void setClaimsOnArea(List<Day3_claim> claims) {
-        int i, j, c1, c2;
-
-
+        int i, j;
         for (Day3_claim claim : claims) {
             for (i = 0; i < claim.getWeight(); i++) {
                 for (j = 0; j < claim.getHeight(); j++) {
-                    String id = claim.getLeft() + i + "x" + claim.getTop() + j;
+                    String id = (claim.getLeft() + i) + "x" + (claim.getTop() + j);
 
                     if (area.get(id) == null)
                         area.put(id, new ArrayList<>());
@@ -55,24 +57,51 @@ public class Day3 {
         }
     }
 
+    //========================BONUS========================
 
+    private void findClaimWithOneId(){
+
+        Set<String> keys = area.keySet();
+        for (String key : keys){
+            if(area.get(key).size() == 1){
+                oneClaims.add(key);
+
+                String id = Integer.toString(area.get(key).get(0));
+                int val = (countClaims.get(id) == null) ? 0  : countClaims.get(id);
+                countClaims.put(id,val+1);
+            }
+        }
+
+    }
+
+    private String checkSize(List<Day3_claim> claims) {
+        String idSize = null;
+        for(Day3_claim claim : claims){
+            idSize = Integer.toString(claim.getId());
+            if(countClaims.get(idSize) != null && (claim.getWeight() * claim.getHeight()) == countClaims.get(idSize)){
+                break;
+            }
+        }
+        return idSize;
+    }
+
+
+    //=====================================================
 
     private Day3_claim makeClaimFromString(String claim){
-
+        // I know... magic numbers ;)
         claim = claim.replace(" ","");
-//        #id @ left,top: wide x tall
-//        Day3_claim(int id, int top, int left, int weight, int height)
         String[] id = claim.split("@");
         String[] size = id[1].split(":");
         String[] startPoint = size[0].split(",");
-        String[] weghtHeight = size[1].split("x");
+        String[] weightHeight = size[1].split("x");
 
         return new Day3_claim(
                 Integer.parseInt(id[0].replace("#","")),
                 Integer.parseInt(startPoint[0]),
                 Integer.parseInt(startPoint[1]),
-                Integer.parseInt(weghtHeight[0]),
-                Integer.parseInt(weghtHeight[1])
+                Integer.parseInt(weightHeight[0]),
+                Integer.parseInt(weightHeight[1])
                 );
     }
 }
